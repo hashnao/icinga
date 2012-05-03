@@ -1,0 +1,131 @@
+*** icinga	Thu May  3 22:37:32 2012
+--- icinga_diff	Thu May  3 22:25:50 2012
+***************
+*** 1,36 ****
+  #!/bin/sh
+  # $Id$
+! # Nagios	Startup script for the Nagios monitoring daemon
+  #
+  # chkconfig:	- 85 15
+! # description:	Nagios is a service monitoring system
+! # processname: nagios
+! # config: /etc/nagios/nagios.cfg
+! # pidfile: /var/nagios/nagios.pid
+  #
+  ### BEGIN INIT INFO
+! # Provides:		nagios
+  # Required-Start:	$local_fs $syslog $network
+  # Required-Stop:	$local_fs $syslog $network
+! # Short-Description:    start and stop Nagios monitoring server
+! # Description:		Nagios is is a service monitoring system 
+  ### END INIT INFO
+  
+  # Source function library.
+  . /etc/rc.d/init.d/functions
+  
+! prefix="/usr"
+! exec_prefix="/usr"
+! exec="/usr/bin/nagios"
+! prog="nagios"
+! config="/etc/nagios/nagios.cfg"
+! pidfile="/var/nagios/nagios.pid"
+! user="nagios"
+  
+  [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+  
+- lockfile=/var/lock/subsys/$prog
+- 
+  start() {
+      [ -x $exec ] || exit 5
+      [ -f $config ] || exit 6
+--- 1,37 ----
+  #!/bin/sh
+  # $Id$
+! # Icinga	Startup script for the Nagios monitoring daemon
+  #
+  # chkconfig:	- 85 15
+! # description:	Icinga is a service monitoring system
+! # processname: icinga
+! # config: /usr/local/icinga/etc/icinga.cfg
+! # pidfile: /var/run/icinga.pid
+  #
+  ### BEGIN INIT INFO
+! # Provides:		icinga
+  # Required-Start:	$local_fs $syslog $network
+  # Required-Stop:	$local_fs $syslog $network
+! # Short-Description:    start and stop Icinga monitoring server
+! # Description:		Icinga is is a service monitoring system 
+  ### END INIT INFO
+  
+  # Source function library.
+  . /etc/rc.d/init.d/functions
+  
+! user="icinga"
+! prog="icinga"
+! prefix="/usr/local/$prog"
+! exec_prefix="${prefix}"
+! exec="${prefix}/bin/$prog"
+! config="${prefix}/etc/$prog.cfg"
+! piddir="/var/run"
+! lockdir="/var/lock/subsys"
+! pidfile="$piddir/$prog.pid"
+! lockfile="${lockdir}/$prog"
+  
+  [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+  
+  start() {
+      [ -x $exec ] || exit 5
+      [ -f $config ] || exit 6
+***************
+*** 47,53 ****
+      killproc -d 10 $exec
+      retval=$?
+      echo
+!     [ $retval -eq 0 ] && rm -f $lockfile
+      return $retval
+  }
+  
+--- 48,54 ----
+      killproc -d 10 $exec
+      retval=$?
+      echo
+!     [ $retval -eq 0 ] && rm -f $lockfile $pidfile
+      return $retval
+  }
+  
+***************
+*** 60,66 ****
+  reload() {
+      echo -n $"Reloading $prog: "
+      killproc $exec -HUP
+!     RETVAL=$?
+      echo
+  }
+  
+--- 61,67 ----
+  reload() {
+      echo -n $"Reloading $prog: "
+      killproc $exec -HUP
+!     retval=$?
+      echo
+  }
+  
+***************
+*** 70,77 ****
+  
+  check_config() {
+          $nice runuser -s /bin/bash - $user -c "$corelimit >/dev/null 2>&1 ; $exec -v $config > /dev/null 2>&1"
+!         RETVAL=$?
+!         if [ $RETVAL -ne 0 ] ; then
+                  echo -n $"Configuration validation failed"
+                  failure
+                  echo
+--- 71,78 ----
+  
+  check_config() {
+          $nice runuser -s /bin/bash - $user -c "$corelimit >/dev/null 2>&1 ; $exec -v $config > /dev/null 2>&1"
+!         retval=$?
+!         if [ $retval -ne 0 ] ; then
+                  echo -n $"Configuration validation failed"
+                  failure
+                  echo
